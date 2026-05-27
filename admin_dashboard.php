@@ -225,7 +225,7 @@ $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
         /* Stats Cards */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             gap: 20px;
             margin-bottom: 25px;
         }
@@ -464,13 +464,19 @@ $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
             </div>
             <div class="stat-card">
                 <h4><i class="fas fa-store"></i> Sellers</h4>
-                <?php 
+                <?php
                 $seller_count = 0;
-                foreach($users as $user) {
-                    if($user['user_type'] == 'seller') $seller_count++;
+                $buyer_count  = 0;
+                foreach ($users as $u) {
+                    if ($u['user_type'] === 'seller')   $seller_count++;
+                    if ($u['user_type'] === 'customer') $buyer_count++;
                 }
                 ?>
                 <div class="stats-number"><?php echo $seller_count; ?></div>
+            </div>
+            <div class="stat-card">
+                <h4><i class="fas fa-shopping-bag"></i> Buyers</h4>
+                <div class="stats-number"><?php echo $buyer_count; ?></div>
             </div>
         </div>
         

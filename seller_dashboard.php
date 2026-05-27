@@ -280,6 +280,24 @@ $stmt = $db->prepare("SELECT * FROM products WHERE user_id = ? ORDER BY id DESC"
 $stmt->execute([$user_id]);
 $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+// Get reviews for seller's products
+try {
+    $rev_stmt = $db->prepare(
+        "SELECT r.id, r.rating, r.comment, r.created_at,
+                p.name AS product_name,
+                u.full_name AS reviewer_name
+         FROM reviews r
+         JOIN products p ON r.product_id = p.id
+         JOIN users u    ON r.user_id    = u.id
+         WHERE p.user_id = ?
+         ORDER BY r.created_at DESC"
+    );
+    $rev_stmt->execute([$user_id]);
+    $seller_reviews = $rev_stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    $seller_reviews = [];
+}
+
 // Get cart count for header
 $cart_count = 0;
 if (isset($_SESSION['user_id'])) {
@@ -418,6 +436,16 @@ if (isset($_SESSION['user_id'])) {
             .brand-text h1 { font-size: 18px; }
         }
 
+        /* Reviews Section */
+        .review-item { background: rgba(255,255,255,0.45); border-radius: 12px; padding: 16px 18px; margin-bottom: 14px; border-left: 4px solid #b8af06; }
+        .review-header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px; margin-bottom: 8px; }
+        .reviewer-name { font-weight: 700; color: #0a1f44; font-size: 14px; }
+        .review-product-tag { display: inline-flex; align-items: center; gap: 5px; background: linear-gradient(135deg, #0a1f44, #1c1917); color: #d8ee68; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+        .review-stars { color: #ffc107; font-size: 16px; letter-spacing: 1px; }
+        .review-comment { color: #1c1917; font-size: 13px; line-height: 1.6; margin: 8px 0 4px; }
+        .review-date { font-size: 11px; color: #777; }
+        .no-reviews { text-align: center; padding: 40px; color: #666; }
+        .no-reviews i { font-size: 50px; color: #b8af06; opacity: 0.6; display: block; margin-bottom: 12px; }
         /* Add Product Modal */
         .catalogue-controls { display: flex; justify-content: flex-end; margin-bottom: 20px; }
         .add-product-btn { background: linear-gradient(135deg, #d8ee68, #375113); color: #0b1220; border: none; padding: 12px 25px; border-radius: 10px; font-weight: 700; font-size: 15px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: transform 0.2s, opacity 0.2s; }
@@ -494,6 +522,33 @@ if (isset($_SESSION['user_id'])) {
         </div>
     <?php endif; ?>
 </div>
+    <!-- REVIEWS SECTION -->
+    <div class="section-card">
+        <div class="section-title"><i class="fas fa-star"></i> Product Reviews (<?php echo count($seller_reviews); ?>)</div>
+        <?php if (empty($seller_reviews)): ?>
+            <div class="no-reviews">
+                <i class="fas fa-star-half-alt"></i>
+                <p>No reviews yet. Reviews from buyers will appear here.</p>
+            </div>
+        <?php else: ?>
+            <?php foreach ($seller_reviews as $rev): ?>
+            <div class="review-item">
+                <div class="review-header">
+                    <div>
+                        <span class="reviewer-name"><i class="fas fa-user-circle"></i> <?php echo htmlspecialchars($rev['reviewer_name']); ?></span>
+                        <span class="review-product-tag" style="margin-left:10px;"><i class="fas fa-box"></i> <?php echo htmlspecialchars($rev['product_name']); ?></span>
+                    </div>
+                    <div class="review-stars">
+                        <?php for ($s = 1; $s <= 5; $s++) echo $s <= $rev['rating'] ? '★' : '☆'; ?>
+                        <span style="font-size:12px; color:#1c1917; margin-left:4px;">(<?php echo $rev['rating']; ?>/5)</span>
+                    </div>
+                </div>
+                <div class="review-comment"><?php echo nl2br(htmlspecialchars($rev['comment'])); ?></div>
+                <div class="review-date"><i class="fas fa-calendar-alt"></i> <?php echo date('F j, Y', strtotime($rev['created_at'])); ?></div>
+            </div>
+            <?php endforeach; ?>
+        <?php endif; ?>
+    </div>
 </div>
 
 <footer><p>© 2026 Reloop Electronic Hub — All Rights Reserved</p></footer>

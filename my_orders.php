@@ -2,13 +2,31 @@
 session_start();
 require_once 'config/db.php';
 
-if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] != 'customer') {
+$_mo_ok = isset($_SESSION['user_id']) && (
+    $_SESSION['user_type'] === 'customer' ||
+    ($_SESSION['user_type'] === 'seller' && ($_SESSION['current_mode'] ?? 'seller') === 'buyer')
+);
+if (!$_mo_ok) {
     header("Location: login.php");
     exit();
 }
 
 $database = new Database();
 $db = $database->getConnection();
+
+// Handle order cancellation
+if (isset($_POST['cancel_order'])) {
+    $cancel_id = (int)$_POST['cancel_order'];
+    $chk = $db->prepare("SELECT id, order_status FROM orders WHERE id = ? AND user_id = ?");
+    $chk->execute([$cancel_id, $_SESSION['user_id']]);
+    $chk_order = $chk->fetch(PDO::FETCH_ASSOC);
+    if ($chk_order && $chk_order['order_status'] === 'Pending') {
+        $upd = $db->prepare("UPDATE orders SET order_status = 'Cancelled' WHERE id = ? AND user_id = ?");
+        $upd->execute([$cancel_id, $_SESSION['user_id']]);
+    }
+    header("Location: my_orders.php");
+    exit();
+}
 
 $stmt = $db->prepare("SELECT * FROM orders WHERE user_id = ? ORDER BY order_date DESC");
 $stmt->execute([$_SESSION['user_id']]);
@@ -91,6 +109,24 @@ $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
         .btn-shop:hover { transform: translateY(-3px); }
         .btn-back { background: linear-gradient(135deg, #53858a, #0f1f26); color: white; padding: 12px 30px; border-radius: 30px; text-decoration: none; font-weight: 600; display: inline-block; transition: transform 0.3s; }
         .btn-back:hover { transform: translateY(-3px); }
+        .btn-cancel { background: linear-gradient(135deg, #dc3545, #b02a37); color: white; border: none; padding: 8px 18px; border-radius: 30px; font-size: 13px; font-weight: 600; cursor: pointer; transition: transform 0.2s; font-family: "Poppins", Arial, sans-serif; display: inline-flex; align-items: center; gap: 6px; }
+        .btn-cancel:hover { transform: translateY(-2px); }
+        .btn-track { background: linear-gradient(135deg, #53858a, #0f1f26); color: white; padding: 8px 18px; border-radius: 30px; font-size: 13px; font-weight: 600; text-decoration: none; transition: transform 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+        .btn-track:hover { transform: translateY(-2px); }
+        .order-actions { margin-top: 15px; display: flex; justify-content: flex-end; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .cod-badge { display: inline-flex; align-items: center; gap: 5px; background: linear-gradient(135deg, #375113, #1c1917); color: #d8ee68; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; margin-left: 8px; vertical-align: middle; }
+        /* Cancel confirmation modal */
+        .cm-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.82); z-index: 9000; justify-content: center; align-items: center; }
+        .cm-overlay.active { display: flex; }
+        .cm-box { background: linear-gradient(145deg, #ebf974, #b8c079); border-radius: 20px; padding: 40px; max-width: 400px; width: 90%; text-align: center; box-shadow: 0 25px 50px rgba(0,0,0,0.5); animation: cmSlide 0.35s ease; }
+        .cm-box h3 { color: #0a1f44; font-size: 22px; margin-bottom: 10px; }
+        .cm-box p { color: #1c1917; font-size: 14px; margin-bottom: 25px; line-height: 1.6; }
+        .cm-btns { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; }
+        .cm-btns button { padding: 11px 28px; border: none; border-radius: 30px; font-size: 14px; font-weight: 600; cursor: pointer; transition: transform 0.25s; font-family: "Poppins", Arial, sans-serif; }
+        .cm-btns button:hover { transform: translateY(-3px); }
+        .cm-yes { background: linear-gradient(135deg, #dc3545, #b02a37); color: white; }
+        .cm-no  { background: linear-gradient(135deg, #53858a, #0f1f26); color: white; }
+        @keyframes cmSlide { from { opacity: 0; transform: translateY(-30px); } to { opacity: 1; transform: translateY(0); } }
         .footer { background: #020617; padding: 25px; text-align: center; color: #c7dd6e; margin-top: 50px; }
         
         @media (max-width: 768px) {
@@ -135,9 +171,18 @@ $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <div class="order-info">
                         <p><i class="fas fa-map-marker-alt"></i> <strong>Shipping Address:</strong> <?php echo htmlspecialchars($order['shipping_address']); ?>, <?php echo htmlspecialchars($order['shipping_city']); ?></p>
                         <p><i class="fas fa-phone"></i> <strong>Phone:</strong> <?php echo htmlspecialchars($order['shipping_phone']); ?></p>
-                        <p><i class="fas fa-credit-card"></i> <strong>Payment Method:</strong> <?php echo htmlspecialchars($order['payment_method']); ?></p>
+                        <p><i class="fas fa-credit-card"></i> <strong>Payment Method:</strong> <?php echo htmlspecialchars($order['payment_method']); ?><?php if ($order['payment_method'] === 'COD'): ?><span class="cod-badge"><i class="fas fa-money-bill-wave"></i> COD</span><?php endif; ?></p>
                     </div>
                     <div class="order-total"><i class="fas fa-rupee-sign"></i> Total: PKR <?php echo number_format($order['total_amount']); ?></div>
+                </div>
+                <div class="order-actions">
+                    <a href="track_order.php?order_id=<?php echo $order['id']; ?>" class="btn-track"><i class="fas fa-map-marker-alt"></i> Track Order</a>
+                    <?php if ($order['order_status'] === 'Pending'): ?>
+                    <form id="cancelForm_<?php echo $order['id']; ?>" method="POST" style="display:none;">
+                        <input type="hidden" name="cancel_order" value="<?php echo $order['id']; ?>">
+                    </form>
+                    <button class="btn-cancel" onclick="openCancelModal(<?php echo $order['id']; ?>)"><i class="fas fa-times-circle"></i> Cancel Order</button>
+                    <?php endif; ?>
                 </div>
             </div>
             <?php endforeach; ?>
@@ -150,5 +195,36 @@ $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
 </div>
 
 <div class="footer"><p>© 2026 Reloop Electronic Hub — All Rights Reserved</p></div>
+
+<!-- Cancel Order Confirmation Modal -->
+<div id="cancelModal" class="cm-overlay">
+    <div class="cm-box">
+        <h3>🚫 Cancel Order?</h3>
+        <p id="cancelModalMsg">Are you sure you want to cancel this order?<br><small style="opacity:0.8;">This action cannot be undone.</small></p>
+        <div class="cm-btns">
+            <button class="cm-yes" onclick="confirmCancelOrder()"><i class="fas fa-times-circle"></i> Yes, Cancel</button>
+            <button class="cm-no"  onclick="closeCancelModal()"><i class="fas fa-arrow-left"></i> Keep Order</button>
+        </div>
+    </div>
+</div>
+
+<script>
+var _cmOrderId = null;
+function openCancelModal(orderId) {
+    _cmOrderId = orderId;
+    document.getElementById('cancelModalMsg').innerHTML = 'Are you sure you want to cancel <strong>Order #' + orderId + '</strong>?<br><small style="opacity:0.8;">This action cannot be undone.</small>';
+    document.getElementById('cancelModal').classList.add('active');
+}
+function closeCancelModal() {
+    _cmOrderId = null;
+    document.getElementById('cancelModal').classList.remove('active');
+}
+function confirmCancelOrder() {
+    if (_cmOrderId) document.getElementById('cancelForm_' + _cmOrderId).submit();
+}
+document.getElementById('cancelModal').addEventListener('click', function(e) {
+    if (e.target === this) closeCancelModal();
+});
+</script>
 </body>
 </html>

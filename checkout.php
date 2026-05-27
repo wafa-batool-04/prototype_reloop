@@ -445,6 +445,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['place_order'])) {
         .btn-back { width: 100%; padding: 12px; border: none; border-radius: 8px; background: linear-gradient(135deg, #53858a, #0f1f26); color: white; font-weight: 600; cursor: pointer; transition: transform 0.3s; margin-top: 10px; }
         .btn-back:hover { transform: translateY(-2px); background: linear-gradient(135deg, #6ba5aa, #1f3f4d); }
         .error-message { background: #dc3545; color: white; padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: center; }
+        /* Themed in-page notification (replaces browser alert) */
+        .app-alert { display: none; position: fixed; top: 80px; left: 50%; transform: translateX(-50%); z-index: 9999; min-width: 300px; max-width: 520px; width: 92%; animation: appAlertIn 0.3s ease; }
+        .app-alert-inner { background: linear-gradient(135deg, #1c1917, #0a1f44); border: 1px solid #b8af06; color: #eae5dc; padding: 16px 20px; border-radius: 14px; display: flex; align-items: flex-start; gap: 12px; font-size: 14px; box-shadow: 0 12px 35px rgba(0,0,0,0.5); }
+        .app-alert-inner i { color: #b8af06; font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+        .app-alert-inner span { flex: 1; line-height: 1.55; }
+        .app-alert-close { background: rgba(255,255,255,0.12); border: none; color: #eae5dc; width: 26px; height: 26px; border-radius: 50%; cursor: pointer; font-size: 15px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
+        .app-alert-close:hover { background: rgba(220,53,69,0.4); }
+        @keyframes appAlertIn { from { opacity: 0; transform: translateX(-50%) translateY(-18px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
         footer { background: #020617; padding: 25px; text-align: center; color: #c7dd6e; margin-top: 40px; }
         
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -558,23 +566,109 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['place_order'])) {
 
 <footer><p>© 2026 Reloop Electronic Hub — All Rights Reserved</p></footer>
 
+<!-- Themed notification (replaces browser alert) -->
+<div id="appAlert" class="app-alert">
+    <div class="app-alert-inner">
+        <i class="fas fa-exclamation-triangle"></i>
+        <span id="appAlertText"></span>
+        <button class="app-alert-close" onclick="closeAppAlert()">×</button>
+    </div>
+</div>
+
 <script>
+var _appAlertTimer = null;
+function showAppAlert(message) {
+    document.getElementById('appAlertText').textContent = message;
+    var el = document.getElementById('appAlert');
+    el.style.display = 'block';
+    el.style.animation = 'none';
+    void el.offsetHeight;
+    el.style.animation = 'appAlertIn 0.3s ease';
+    clearTimeout(_appAlertTimer);
+    _appAlertTimer = setTimeout(closeAppAlert, 9000);
+}
+function closeAppAlert() {
+    document.getElementById('appAlert').style.display = 'none';
+}
+
 const STRIPE_ENABLED = <?php echo $stripe_enabled ? 'true' : 'false'; ?>;
 const CHECKOUT_GRAND_TOTAL = <?php echo json_encode((float) $grand_total); ?>;
 const STRIPE_APPEARANCE = {
-    theme: 'stripe',
+    theme: 'night',
     variables: {
-        colorPrimary: '#375113',
-        colorBackground: '#ffffff',
-        colorText: '#0a1f44',
-        colorDanger: '#dc3545',
-        borderRadius: '10px',
-        fontFamily: 'Poppins, Arial, sans-serif'
+        colorPrimary:            '#d8ee68',
+        colorBackground:         '#0a1f44',
+        colorText:               '#eae5dc',
+        colorTextSecondary:      '#b8af06',
+        colorTextPlaceholder:    '#8a9bbb',
+        colorDanger:             '#ff6b6b',
+        colorSuccess:            '#d8ee68',
+        borderRadius:            '10px',
+        fontFamily:              'Poppins, Arial, sans-serif'
     },
     rules: {
-        '.Input': { border: '2px solid #e0e0e0', boxShadow: 'none' },
-        '.Input:focus': { border: '2px solid #b8af06', boxShadow: '0 0 0 3px rgba(184,175,6,0.2)' },
-        '.Label': { color: '#0a1f44', fontWeight: '600' }
+        '.Input': {
+            backgroundColor: '#1c1917',
+            border:          '2px solid #375113',
+            color:           '#eae5dc',
+            boxShadow:       'none'
+        },
+        '.Input:focus': {
+            border:    '2px solid #b8af06',
+            boxShadow: '0 0 0 3px rgba(184,175,6,0.25)'
+        },
+        '.Input--invalid': {
+            border: '2px solid #ff6b6b'
+        },
+        '.Label': {
+            color:      '#d8ee68',
+            fontWeight: '600'
+        },
+        '.Tab': {
+            backgroundColor: '#1c1917',
+            border:          '2px solid #2a3a5c',
+            color:           '#eae5dc'
+        },
+        '.Tab:hover': {
+            border: '2px solid #b8af06',
+            color:  '#d8ee68'
+        },
+        '.Tab--selected': {
+            backgroundColor: '#0a1f44',
+            border:          '2px solid #b8af06',
+            color:           '#d8ee68'
+        },
+        '.Tab--selected:focus': {
+            boxShadow: '0 0 0 3px rgba(184,175,6,0.25)'
+        },
+        '.TabIcon--selected': {
+            fill: '#d8ee68'
+        },
+        '.TabLabel--selected': {
+            color: '#d8ee68'
+        },
+        '.Block': {
+            backgroundColor: '#1c1917',
+            border:          '1px solid #375113'
+        },
+        '.PickerItem': {
+            backgroundColor: '#1c1917',
+            border:          '2px solid #2a3a5c',
+            color:           '#eae5dc'
+        },
+        '.PickerItem--selected': {
+            backgroundColor: '#0a1f44',
+            border:          '2px solid #b8af06',
+            color:           '#d8ee68'
+        },
+        '.CheckboxInput': {
+            backgroundColor: '#1c1917',
+            border:          '2px solid #375113'
+        },
+        '.CheckboxInput--checked': {
+            backgroundColor: '#d8ee68',
+            border:          '2px solid #d8ee68'
+        }
     }
 };
 
@@ -585,7 +679,7 @@ let stripePaymentIntentId = null;
 
 function selectPayment(method) {
     if (method === 'stripe' && !STRIPE_ENABLED) {
-        alert('Stripe is not configured. Use Cash on Delivery or add keys in config/stripe.local.php');
+        showAppAlert('Stripe is not configured. Please use Cash on Delivery, or add keys in config/stripe.local.php to enable card payments.');
         return;
     }
     document.querySelectorAll('.payment-method').forEach(el => el.classList.remove('selected'));
@@ -753,11 +847,11 @@ function placeOrder(extra) {
                 window.location.href = 'order_confirmation.php?id=' + encodeURIComponent(data.order_id);
                 return;
             }
-            alert(data.error || 'Error placing order');
+            showAppAlert(data.error || 'Error placing order. Please try again.');
             if (codBtn) { codBtn.disabled = false; codBtn.innerHTML = '<i class="fas fa-check-circle"></i> Confirm & Place Order'; }
             if (stripeBtn) { stripeBtn.disabled = false; stripeBtn.innerHTML = '<i class="fas fa-lock"></i> Pay with Stripe'; }
         })
-        .catch((err) => alert(err.message || 'Error placing order'));
+        .catch((err) => showAppAlert(err.message || 'Error placing order. Please try again.'));
 }
 
 window.onload = function() { selectPayment('cod'); };

@@ -34,7 +34,14 @@ $products_data = [
     124 => ['name' => 'Sennheiser Momentum 4', 'price' => 70000, 'image' => 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRFEClCSSWg-91nXKq0eAkZCS3EtzVBTajtEw&s'],
 ];
 
-// Handle AJAX update 
+// Block sellers in seller mode — they must switch to buyer mode to shop
+$_cart_seller_blocked = (
+    isset($_SESSION['user_id'], $_SESSION['user_type']) &&
+    $_SESSION['user_type'] === 'seller' &&
+    ($_SESSION['current_mode'] ?? 'seller') === 'seller'
+);
+
+// Handle AJAX update
 if (isset($_POST['ajax_update']) && isset($_POST['cart_id']) && isset($_POST['quantity'])) {
     header('Content-Type: application/json');
     if (!isset($_SESSION['user_id'])) {
@@ -153,8 +160,8 @@ if (isset($_SESSION['user_id'])) {
             padding: 0;
         }
         
-        body { 
-            background: linear-gradient(180deg, #b8af06, #1c1917); 
+        body {
+            background: linear-gradient(180deg, #b8af06, #1c1917);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -278,16 +285,22 @@ if (isset($_SESSION['user_id'])) {
         .cart-table tr:hover { background: #d0ddc9; }
         .cart-table img { width: 70px; height: 70px; object-fit: cover; border-radius: 10px; }
         .product-name { font-weight: 600; color: #0a1f44; }
-        .color-badge { 
+        .color-badge {
             display: inline-block;
             padding: 4px 12px;
-            background: #e0e0e0;
+            background: linear-gradient(135deg, #0a1f44, #1c1917);
             border-radius: 20px;
             font-size: 12px;
             font-weight: 500;
-            color: #333;
+            color: #d8ee68;
         }
         .color-badge i { margin-right: 4px; font-size: 10px; }
+        .seller-blocked { text-align: center; background: #d0ddc9; border-radius: 20px; padding: 60px 40px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
+        .seller-blocked i { font-size: 60px; color: #b8af06; margin-bottom: 20px; display: block; }
+        .seller-blocked h3 { font-size: 22px; color: #0a1f44; margin-bottom: 10px; }
+        .seller-blocked p { color: #1c1917; margin-bottom: 25px; font-size: 14px; }
+        .seller-blocked .btn-switch { display: inline-block; padding: 12px 28px; background: linear-gradient(135deg, #d8ee68, #375113); color: #0b1220; border-radius: 30px; font-weight: 700; text-decoration: none; transition: transform 0.2s; }
+        .seller-blocked .btn-switch:hover { transform: translateY(-2px); }
         .price { font-weight: bold; color: #0a1f44; }
         .qty { display: flex; justify-content: center; align-items: center; gap: 10px; }
         .qty-btn { padding: 5px 12px; border: none; border-radius: 6px; background: linear-gradient(135deg, #53858a, #0f1f26); color: #eae5dc; font-weight: 600; cursor: pointer; font-size: 16px; min-width: 35px; transition: transform 0.2s; }
@@ -301,9 +314,9 @@ if (isset($_SESSION['user_id'])) {
         .summary-row.total { font-size: 18px; font-weight: bold; color: #0a1f44; margin-top: 15px; padding-top: 15px; border-top: 2px solid #b8af06; }
         .btn-checkout { width: 100%; padding: 12px; border: none; border-radius: 30px; background: linear-gradient(135deg, #d8ee68, #375113); color: #0a1f44; font-weight: 600; cursor: pointer; text-decoration: none; display: block; text-align: center; transition: transform 0.2s; }
         .btn-checkout:hover { transform: translateY(-2px); background: linear-gradient(135deg, #e5f77a, #4a6b1a); }
-        .empty-cart, .login-required { text-align: center; background: #fdfdfd; border-radius: 20px; padding: 60px; box-shadow: 0 25px 50px rgba(0,0,0,0.7); }
+        .empty-cart, .login-required { text-align: center; background: #d0ddc9; border-radius: 20px; padding: 60px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
         .empty-cart p, .login-required p { font-size: 18px; color: #0a1f44; margin-bottom: 20px; }
-        .empty-cart button, .login-required a button { padding: 12px 32px; border: none; border-radius: 30px; background: linear-gradient(135deg, #d8ee68, #375113); color: #0a1f44; font-weight: 600; cursor: pointer; transition: transform 0.2s; }
+        .empty-cart button, .login-required a button { padding: 12px 32px; border: none; border-radius: 30px; background: linear-gradient(135deg, #d8ee68, #375113); color: #0a1f44; font-weight: 600; cursor: pointer; transition: transform 0.2s; font-family: "Poppins", Arial, sans-serif; }
         .empty-cart button:hover, .login-required a button:hover { transform: translateY(-2px); }
         .login-required a { text-decoration: none; }
         
@@ -342,7 +355,14 @@ if (isset($_SESSION['user_id'])) {
 <div class="cart-container">
     <h2><i class="fas fa-shopping-cart"></i> Your Shopping Cart</h2>
 
-    <?php if(!isset($_SESSION['user_id'])): ?>
+    <?php if($_cart_seller_blocked): ?>
+        <div class="seller-blocked">
+            <i class="fas fa-store-slash"></i>
+            <h3>You're in Seller Mode</h3>
+            <p>You cannot place orders while in Seller Mode.<br>Switch to Buyer Mode to start shopping.</p>
+            <a href="switch_mode.php" class="btn-switch"><i class="fas fa-exchange-alt"></i> Switch to Buyer Mode</a>
+        </div>
+    <?php elseif(!isset($_SESSION['user_id'])): ?>
         <div class="login-required">
             <p><i class="fas fa-lock"></i> Please login to view your cart.</p>
             <a href="login.php"><button>Login Now</button></a>

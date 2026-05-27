@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 session_start();
 require_once 'config/db.php';
 
@@ -146,8 +146,8 @@ $status_class = strtolower($order['order_status']) === 'paid' ? 'status-paid' : 
                 <?php foreach ($order_items as $item): ?>
                 <li>
                     <?php echo htmlspecialchars($item['product_name'] ?? ('Product #' . $item['product_id'])); ?>
-                    × <?php echo (int) $item['quantity']; ?>
-                    — PKR <?php echo number_format($item['price'] * $item['quantity']); ?>
+                    Ã— <?php echo (int) $item['quantity']; ?>
+                    â€” PKR <?php echo number_format($item['price'] * $item['quantity']); ?>
                 </li>
                 <?php endforeach; ?>
             </ul>
@@ -155,8 +155,8 @@ $status_class = strtolower($order['order_status']) === 'paid' ? 'status-paid' : 
         </div>
         <div class="btn-group">
             <a href="homepage.php" class="btn btn-primary"><i class="fas fa-shopping-bag"></i> Continue Shopping</a>
-            <a href="buyer_dashboard.php" class="btn"><i class="fas fa-user"></i> View Dashboard</a>
         </div>
     </div>
 </body>
 </html>
+
