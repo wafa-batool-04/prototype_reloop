@@ -596,79 +596,21 @@ const CHECKOUT_GRAND_TOTAL = <?php echo json_encode((float) $grand_total); ?>;
 const STRIPE_APPEARANCE = {
     theme: 'night',
     variables: {
-        colorPrimary:            '#d8ee68',
-        colorBackground:         '#0a1f44',
-        colorText:               '#eae5dc',
-        colorTextSecondary:      '#b8af06',
-        colorTextPlaceholder:    '#8a9bbb',
-        colorDanger:             '#ff6b6b',
-        colorSuccess:            '#d8ee68',
-        borderRadius:            '10px',
-        fontFamily:              'Poppins, Arial, sans-serif'
+        colorPrimary:         '#d8ee68',
+        colorBackground:      '#0a1f44',
+        colorText:            '#eae5dc',
+        colorTextSecondary:   '#b8af06',
+        colorDanger:          '#dc3545',
+        borderRadius:         '10px',
+        fontFamily:           'Poppins, Arial, sans-serif'
     },
     rules: {
-        '.Input': {
-            backgroundColor: '#1c1917',
-            border:          '2px solid #375113',
-            color:           '#eae5dc',
-            boxShadow:       'none'
-        },
-        '.Input:focus': {
-            border:    '2px solid #b8af06',
-            boxShadow: '0 0 0 3px rgba(184,175,6,0.25)'
-        },
-        '.Input--invalid': {
-            border: '2px solid #ff6b6b'
-        },
-        '.Label': {
-            color:      '#d8ee68',
-            fontWeight: '600'
-        },
-        '.Tab': {
-            backgroundColor: '#1c1917',
-            border:          '2px solid #2a3a5c',
-            color:           '#eae5dc'
-        },
-        '.Tab:hover': {
-            border: '2px solid #b8af06',
-            color:  '#d8ee68'
-        },
-        '.Tab--selected': {
-            backgroundColor: '#0a1f44',
-            border:          '2px solid #b8af06',
-            color:           '#d8ee68'
-        },
-        '.Tab--selected:focus': {
-            boxShadow: '0 0 0 3px rgba(184,175,6,0.25)'
-        },
-        '.TabIcon--selected': {
-            fill: '#d8ee68'
-        },
-        '.TabLabel--selected': {
-            color: '#d8ee68'
-        },
-        '.Block': {
-            backgroundColor: '#1c1917',
-            border:          '1px solid #375113'
-        },
-        '.PickerItem': {
-            backgroundColor: '#1c1917',
-            border:          '2px solid #2a3a5c',
-            color:           '#eae5dc'
-        },
-        '.PickerItem--selected': {
-            backgroundColor: '#0a1f44',
-            border:          '2px solid #b8af06',
-            color:           '#d8ee68'
-        },
-        '.CheckboxInput': {
-            backgroundColor: '#1c1917',
-            border:          '2px solid #375113'
-        },
-        '.CheckboxInput--checked': {
-            backgroundColor: '#d8ee68',
-            border:          '2px solid #d8ee68'
-        }
+        '.Input':        { border: '2px solid #375113', boxShadow: 'none' },
+        '.Input:focus':  { border: '2px solid #b8af06', boxShadow: '0 0 0 3px rgba(184,175,6,0.2)' },
+        '.Label':        { color: '#d8ee68', fontWeight: '600' },
+        '.Tab':          { border: '2px solid #1c1917', backgroundColor: '#1c1917' },
+        '.Tab--selected':{ border: '2px solid #b8af06', backgroundColor: '#0a1f44', color: '#d8ee68' },
+        '.Tab:hover':    { border: '2px solid #b8af06', color: '#d8ee68' }
     }
 };
 

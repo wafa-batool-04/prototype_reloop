@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 session_start();
 require_once 'config/db.php';
 
@@ -34,7 +34,7 @@ $products_data = [
     124 => ['name' => 'Sennheiser Momentum 4', 'price' => 70000, 'image' => 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRFEClCSSWg-91nXKq0eAkZCS3EtzVBTajtEw&s'],
 ];
 
-// Block sellers in seller mode — they must switch to buyer mode to shop
+// Block sellers in seller mode â€” they must switch to buyer mode to shop
 $_cart_seller_blocked = (
     isset($_SESSION['user_id'], $_SESSION['user_type']) &&
     $_SESSION['user_type'] === 'seller' &&
@@ -152,14 +152,7 @@ if (isset($_SESSION['user_id'])) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Poppins", Arial, sans-serif; }
-        
-        
-        html, body {
-            height: 100%;
-            margin: 0;
-            padding: 0;
-        }
-        
+
         body {
             background: linear-gradient(180deg, #b8af06, #1c1917);
             min-height: 100vh;
@@ -411,14 +404,14 @@ if (isset($_SESSION['user_id'])) {
                 <div class="summary-row"><span>Tax (10%)</span><span id="tax">PKR <?php echo number_format($total * 0.1); ?></span></div>
                 <div class="summary-row"><span>Delivery</span><span id="delivery">PKR 1,000</span></div>
                 <div class="summary-row total"><span>Total Amount</span><span id="grand-total">PKR <?php echo number_format($total + ($total * 0.1) + 1000); ?></span></div>
-                <a href="checkout.php" class="btn-checkout"><i class="fas fa-credit-card"></i> Proceed to Checkout →</a>
+                <a href="checkout.php" class="btn-checkout"><i class="fas fa-credit-card"></i> Proceed to Checkout </a>
             </div>
         </div>
     <?php endif; ?>
 </div>
 
 <footer>
-    <p>© 2026 Reloop Electronic Hub — All Rights Reserved</p>
+    <p>Â© 2026 Reloop Electronic Hub â€” All Rights Reserved</p>
 </footer>
 
 <script>
