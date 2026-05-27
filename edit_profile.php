@@ -71,6 +71,21 @@ $back = "buyer_dashboard.php";
 if ($user['user_type'] == 'seller') $back = "seller_dashboard.php";
 elseif ($user['user_type'] == 'admin') $back = "admin_dashboard.php";
 
+// Seller analytics
+$ep_products = 0;
+$ep_reviews = 0;
+if ($user['user_type'] === 'seller') {
+    try {
+        $s = $db->prepare("SELECT COUNT(*) FROM products WHERE user_id = ?");
+        $s->execute([$user['id']]);
+        $ep_products = (int)$s->fetchColumn();
+
+        $s = $db->prepare("SELECT COUNT(*) FROM reviews r JOIN products p ON r.product_id = p.id WHERE p.user_id = ?");
+        $s->execute([$user['id']]);
+        $ep_reviews = (int)$s->fetchColumn();
+    } catch (PDOException $e) {}
+}
+
 // Get cart count for header
 $cart_count = 0;
 if (isset($_SESSION['user_id'])) {
@@ -286,6 +301,10 @@ if (!empty($user['profile_image']) && file_exists('uploads/' . $user['profile_im
         small { color: #6c757d; display: block; margin-top: 5px; font-size: 11px; }
         .button-group { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
         .text-center { text-align: center; margin-top: 10px; }
+        .ep-stats { display: flex; gap: 15px; margin: 18px 0 0; }
+        .ep-stat { flex: 1; background: linear-gradient(135deg, #0a1f44, #1c1917); border-radius: 12px; padding: 16px 10px; text-align: center; }
+        .ep-stat-val { display: block; font-size: 26px; font-weight: 700; color: #d8ee68; }
+        .ep-stat-lbl { display: block; font-size: 11px; color: #eae5dc; opacity: 0.7; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
         .footer { background: #020617; padding: 25px; text-align: center; color: #c7dd6e; margin-top: 40px; }
         
         @media (max-width: 768px) {
@@ -308,39 +327,7 @@ if (!empty($user['profile_image']) && file_exists('uploads/' . $user['profile_im
 </head>
 <body>
 
-<div class="main-header">
-    <div class="header-container">
-        <div class="logo-area">
-            <div class="glass-cube-logo">
-                <div class="cube-container">
-                    <div class="rotating-cube">
-                        <div class="cube-face front"><span>⟳</span></div>
-                        <div class="cube-face back"><span>⟳</span></div>
-                        <div class="cube-face right"><span>⟳</span></div>
-                        <div class="cube-face left"><span>⟳</span></div>
-                        <div class="cube-face top"><span>⟳</span></div>
-                        <div class="cube-face bottom"><span>⟳</span></div>
-                    </div>
-                </div>
-                <div class="orb orb1"></div>
-                <div class="orb orb2"></div>
-                <div class="orb orb3"></div>
-                <div class="orb orb4"></div>
-            </div>
-            <div class="brand-text">
-                <h1>RELOOP</h1>
-                <p>ELECTRONIC HUB</p>
-            </div>
-        </div>
-        <div class="nav-menu">
-            <a href="homepage.php"><i class="fas fa-home"></i> Home</a>
-            <a href="<?php echo $back; ?>"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
-            <a href="cart.php" class="cart-link"><i class="fas fa-shopping-cart"></i> Cart <?php if($cart_count > 0): ?><span class="cart-badge"><?php echo $cart_count; ?></span><?php endif; ?></a>
-            <a href="logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
-            <span class="user-badge"><i class="fas fa-user"></i> <?php echo htmlspecialchars($_SESSION['user_name']); ?></span>
-        </div>
-    </div>
-</div>
+<?php include 'navbar.php'; ?>
 
 <div class="container">
     <div class="profile-card">
@@ -348,12 +335,24 @@ if (!empty($user['profile_image']) && file_exists('uploads/' . $user['profile_im
         
         <div class="text-center" style="margin-bottom: 15px;">
             <span class="badge">
-                <?php 
+                <?php
                 if($user['user_type'] == 'seller') echo "<i class='fas fa-store'></i> Seller Account";
                 elseif($user['user_type'] == 'customer') echo "<i class='fas fa-user'></i> Buyer Account";
-                elseif($user['user_type'] == 'admin') echo "<i class='fas fa-user-shield'></i> Administrator"; 
+                elseif($user['user_type'] == 'admin') echo "<i class='fas fa-user-shield'></i> Administrator";
                 ?>
             </span>
+            <?php if ($user['user_type'] === 'seller'): ?>
+            <div class="ep-stats">
+                <div class="ep-stat">
+                    <span class="ep-stat-val"><?php echo $ep_products; ?></span>
+                    <span class="ep-stat-lbl"><i class="fas fa-box"></i> Products</span>
+                </div>
+                <div class="ep-stat">
+                    <span class="ep-stat-val"><?php echo $ep_reviews; ?></span>
+                    <span class="ep-stat-lbl"><i class="fas fa-star"></i> Reviews</span>
+                </div>
+            </div>
+            <?php endif; ?>
         </div>
         
         <?php if($message): ?>

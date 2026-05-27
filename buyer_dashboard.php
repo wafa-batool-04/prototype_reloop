@@ -2,7 +2,12 @@
 session_start();
 require_once 'config/db.php';
 
-if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] != 'customer') {
+// Allow customers and sellers in buyer mode
+$_buyer_mode_ok = isset($_SESSION['user_id']) && (
+    $_SESSION['user_type'] === 'customer' ||
+    ($_SESSION['user_type'] === 'seller' && ($_SESSION['current_mode'] ?? 'seller') === 'buyer')
+);
+if (!$_buyer_mode_ok) {
     header("Location: login.php");
     exit();
 }
@@ -209,49 +214,7 @@ try {
 </head>
 <body>
 
-<div id="logoutModal" class="logout-modal">
-    <div class="logout-modal-content">
-        <h3>🔓 Confirm Logout</h3>
-        <p>Are you sure you want to logout from your account?</p>
-        <div class="logout-modal-buttons">
-            <button class="btn-confirm" onclick="confirmLogout()">Yes, Logout</button>
-            <button class="btn-cancel" onclick="closeLogoutModal()">Cancel</button>
-        </div>
-    </div>
-</div>
-
-<div class="main-header">
-    <div class="header-container">
-        <div class="logo-area">
-            <div class="glass-cube-logo">
-                <div class="cube-container">
-                    <div class="rotating-cube">
-                        <div class="cube-face front"><span>⟳</span></div>
-                        <div class="cube-face back"><span>⟳</span></div>
-                        <div class="cube-face right"><span>⟳</span></div>
-                        <div class="cube-face left"><span>⟳</span></div>
-                        <div class="cube-face top"><span>⟳</span></div>
-                        <div class="cube-face bottom"><span>⟳</span></div>
-                    </div>
-                </div>
-                <div class="orb orb1"></div>
-                <div class="orb orb2"></div>
-                <div class="orb orb3"></div>
-                <div class="orb orb4"></div>
-            </div>
-            <div class="brand-text">
-                <h1>RELOOP</h1>
-                <p>ELECTRONIC HUB</p>
-            </div>
-        </div>
-        <div class="nav-menu">
-            <a href="homepage.php"><i class="fas fa-home"></i> Home</a>
-            <a href="cart.php" class="cart-link"><i class="fas fa-shopping-cart"></i> Cart</a>
-            <a href="#" onclick="showLogoutModal(event)"><i class="fas fa-sign-out-alt"></i> Logout</a>
-            <span class="user-badge"><i class="fas fa-user"></i> <?php echo $_SESSION['user_name']; ?> (Buyer)</span>
-        </div>
-    </div>
-</div>
+<?php include 'navbar.php'; ?>
 
 <div class="container">
     <div class="welcome-banner">
@@ -309,10 +272,6 @@ try {
 <script>
 function browseProducts() { localStorage.setItem('focusSearch', 'true'); window.location.href = 'homepage.php'; }
 function filterAndGo(category) { localStorage.setItem('filterCategory', category); window.location.href = 'homepage.php#products'; }
-function showLogoutModal(event) { event.preventDefault(); document.getElementById('logoutModal').classList.add('active'); }
-function closeLogoutModal() { document.getElementById('logoutModal').classList.remove('active'); }
-function confirmLogout() { window.location.href = 'logout.php'; }
-window.onclick = function(event) { const modal = document.getElementById('logoutModal'); if (event.target === modal) closeLogoutModal(); }
 </script>
 </body>
 </html>

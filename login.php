@@ -24,10 +24,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $_SESSION['user_name'] = $user['full_name'];
             $_SESSION['user_type'] = $user['user_type'];
             
-            if (!empty($redirect_to)) header("Location: " . $redirect_to);
-            elseif ($user['user_type'] == 'admin') header("Location: admin_dashboard.php");
-            elseif ($user['user_type'] == 'seller') header("Location: seller_dashboard.php");
-            else header("Location: buyer_dashboard.php");
+            header("Location: " . (!empty($redirect_to) ? $redirect_to : 'homepage.php'));
             exit();
         } else {
             $error = "Invalid email or password";

@@ -79,6 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_product'])) {
     // Make sure we have a valid product name
     if (empty($product_name_from_post)) {
         $error_message = "Product name is required!";
+        $open_add_modal = true;
     } else {
         $brand = trim($_POST['brand']);
         $category = $_POST['category'];
@@ -255,14 +256,11 @@ $color_hex_json = json_encode($color_hex_array);
         ]);
         
         if ($result) {
-            $success_message = "Product '{$product_name_from_post}' added successfully!";
-            $_POST = array();
-            // Refresh products list
-            $stmt = $db->prepare("SELECT * FROM products WHERE user_id = ? ORDER BY id DESC");
-            $stmt->execute([$user_id]);
-            $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            header("Location: seller_dashboard.php?product_added=1");
+            exit();
         } else {
             $error_message = "Failed to add product. Please check all fields and try again.";
+            $open_add_modal = true;
             error_log("Product insertion failed: " . print_r($stmt->errorInfo(), true));
         }
     }
@@ -301,7 +299,7 @@ if (isset($_SESSION['user_id'])) {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Seller Dashboard - Reloop Electronic Hub</title>
+    <title>My Catalogue - Reloop Electronic Hub</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -419,182 +417,41 @@ if (isset($_SESSION['user_id'])) {
             .front { transform: translateZ(20px); }
             .brand-text h1 { font-size: 18px; }
         }
+
+        /* Add Product Modal */
+        .catalogue-controls { display: flex; justify-content: flex-end; margin-bottom: 20px; }
+        .add-product-btn { background: linear-gradient(135deg, #d8ee68, #375113); color: #0b1220; border: none; padding: 12px 25px; border-radius: 10px; font-weight: 700; font-size: 15px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: transform 0.2s, opacity 0.2s; }
+        .add-product-btn:hover { transform: translateY(-2px); opacity: 0.9; }
+        .ap-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 2000; overflow-y: auto; justify-content: center; align-items: flex-start; padding: 40px 20px; }
+        .ap-overlay.active { display: flex; }
+        .ap-box { background: #d0ddc9; border-radius: 20px; padding: 30px; max-width: 820px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.5); position: relative; margin: auto; }
+        .ap-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #b8af06; }
+        .ap-head h2 { font-size: 20px; font-weight: 700; color: #0a1f44; display: flex; align-items: center; gap: 10px; }
+        .ap-close { background: #dc3545; color: white; border: none; width: 36px; height: 36px; border-radius: 50%; font-size: 20px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s; flex-shrink: 0; }
+        .ap-close:hover { background: #b02a37; }
     </style>
 </head>
 <body>
 
-<div class="main-header">
-    <div class="header-container">
-        <div class="logo-area">
-            <div class="glass-cube-logo">
-                <div class="cube-container"><div class="rotating-cube">
-                    <div class="cube-face front"><span>⟳</span></div><div class="cube-face back"><span>⟳</span></div>
-                    <div class="cube-face right"><span>⟳</span></div><div class="cube-face left"><span>⟳</span></div>
-                    <div class="cube-face top"><span>⟳</span></div><div class="cube-face bottom"><span>⟳</span></div>
-                </div></div>
-                <div class="orb orb1"></div><div class="orb orb2"></div><div class="orb orb3"></div><div class="orb orb4"></div>
-            </div>
-            <div class="brand-text"><h1>RELOOP</h1><p>ELECTRONIC HUB</p></div>
-        </div>
-        <div class="nav-menu">
-            <a href="homepage.php"><i class="fas fa-home"></i> Home</a>
-            <a href="seller_dashboard.php"><i class="fas fa-store"></i> Dashboard</a>
-            <a href="cart.php" class="cart-link"><i class="fas fa-shopping-cart"></i> Cart <?php if($cart_count > 0): ?><span class="cart-badge"><?php echo $cart_count; ?></span><?php endif; ?></a>
-            <a href="logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
-            <span class="user-badge"><i class="fas fa-user"></i> <?php echo htmlspecialchars($user_name); ?></span>
-        </div>
-    </div>
-</div>
+<?php include 'navbar.php'; ?>
 
 <div class="dashboard-container">
     <div class="dashboard-header">
-        <h1><i class="fas fa-store"></i> Seller Dashboard</h1>
+        <h1><i class="fas fa-store"></i> My Catalogue</h1>
     </div>
 
-    <div class="stats-grid">
-        <div class="stat-card"><i class="fas fa-box"></i><h3><?php echo count($products); ?></h3><p>Total Products</p></div>
-        <div class="stat-card"><i class="fas fa-chart-line"></i><h3>0</h3><p>Total Sales</p></div>
-        <div class="stat-card"><i class="fas fa-star"></i><h3>4.5</h3><p>Seller Rating</p></div>
-    </div>
-
-    <?php if(isset($profile_success)): ?>
-        <div class="alert alert-success"><i class="fas fa-check-circle"></i> <?php echo $profile_success; ?></div>
+    <?php if(isset($_GET['product_added'])): ?>
+        <div class="alert alert-success"><i class="fas fa-check-circle"></i> Product added to catalogue successfully!</div>
     <?php endif; ?>
-    
-    <?php if(isset($success_message)): ?>
-        <div class="alert alert-success"><i class="fas fa-check-circle"></i> <?php echo $success_message; ?></div>
-    <?php endif; ?>
-    
     <?php if(isset($error_message)): ?>
         <div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> <?php echo $error_message; ?></div>
     <?php endif; ?>
 
-    <!-- PROFILE SECTION -->
-    <div class="section-card">
-        <div class="section-title"><i class="fas fa-user-circle"></i> My Profile</div>
-        
-        <div class="profile-info">
-            <div>
-                <?php if(!empty($user_data['profile_image']) && file_exists($user_data['profile_image'])): ?>
-                    <img src="<?php echo htmlspecialchars($user_data['profile_image']); ?>" class="profile-avatar">
-                <?php else: ?>
-                    <div class="profile-avatar-placeholder"><i class="fas fa-user"></i></div>
-                <?php endif; ?>
-            </div>
-            <div class="profile-details">
-                <p><i class="fas fa-user"></i> <strong><?php echo htmlspecialchars($user_data['full_name']); ?></strong></p>
-                <p><i class="fas fa-envelope"></i> <?php echo htmlspecialchars($user_data['email']); ?></p>
-                <p><i class="fas fa-phone"></i> <?php echo !empty($user_data['phone']) ? htmlspecialchars($user_data['phone']) : 'Not provided'; ?></p>
-                <p><i class="fas fa-map-marker-alt"></i> <?php echo !empty($user_data['address']) ? htmlspecialchars($user_data['address']) : 'Not provided'; ?></p>
-                <p><i class="fas fa-calendar-alt"></i> Member since: <?php echo date('F j, Y', strtotime($user_data['created_at'])); ?></p>
-            </div>
-        </div>
-        
-        <form method="POST" action="" enctype="multipart/form-data">
-            <div class="form-row">
-                <div class="form-group"><label>Full Name</label><input type="text" name="full_name" value="<?php echo htmlspecialchars($user_data['full_name']); ?>" required></div>
-                <div class="form-group"><label>Phone Number</label><input type="text" name="phone" value="<?php echo htmlspecialchars($user_data['phone']); ?>" placeholder="+92 300 1234567"></div>
-            </div>
-            <div class="form-group"><label>Address</label><textarea name="address"><?php echo htmlspecialchars($user_data['address']); ?></textarea></div>
-            <div class="form-group"><label>Profile Image</label><input type="file" name="profile_image" accept="image/*"></div>
-            <button type="submit" name="update_profile" class="submit-btn"><i class="fas fa-save"></i> Update Profile</button>
-        </form>
-    </div>
-
-    <!-- ADD NEW PRODUCT SECTION -->
-    <div class="section-card">
-        <div class="section-title"><i class="fas fa-plus-circle"></i> Add New Product</div>
-        <form method="POST" action="" enctype="multipart/form-data" id="productForm">
-            <div class="form-row">
-                <div class="form-group"><label>Product Name *</label><input type="text" name="name" required placeholder="e.g., iPhone 15 Pro Max"></div>
-                <div class="form-group"><label>Brand *</label><input type="text" name="brand" required placeholder="e.g., Apple"></div>
-            </div>
-            <div class="form-row">
-                <div class="form-group"><label>Category *</label>
-                    <select name="category" required>
-                        <option value="">Select Category</option>
-                        <option value="Smartphones">📱 Smartphones</option>
-                        <option value="Laptops">💻 Laptops</option>
-                        <option value="Smart Watches">⌚ Smart Watches</option>
-                        <option value="Accessories">🎧 Accessories</option>
-                        <option value="Audio Devices">🔊 Audio Devices</option>
-                    </select>
-                </div>
-                <div class="form-group"><label>Stock Status *</label>
-                    <select name="stock_status" required>
-                        <option value="Available">Available</option>
-                        <option value="Limited">Limited Stock</option>
-                        <option value="Out of Stock">Out of Stock</option>
-                    </select>
-                </div>
-            </div>
-            <div class="form-row">
-                <div class="form-group"><label>Current Price (PKR) *</label><input type="number" name="price" required placeholder="e.g., 350000"></div>
-                <div class="form-group"><label>Original Price (PKR)</label><input type="number" name="original_price" placeholder="e.g., 389999"></div>
-                <div class="form-group"><label>Discount (%)</label><input type="number" name="discount" placeholder="e.g., 10"></div>
-            </div>
-            <div class="form-row">
-                <div class="form-group"><label>Warranty</label>
-                    <select name="warranty">
-                        <option value="1 Year">1 Year</option>
-                        <option value="2 Years">2 Years</option>
-                        <option value="3 Years">3 Years</option>
-                        <option value="6 Months">6 Months</option>
-                    </select>
-                </div>
-                <div class="form-group"><label>Product Description *</label>
-                    <textarea name="description" required placeholder="Describe your product in detail..."></textarea>
-                </div>
-            </div>
-            
-            <!-- Media Section -->
-            <div class="section-title" style="margin-top: 15px;"><i class="fas fa-images"></i> Product Media (Images & Videos)</div>
-            <div id="mediaContainer" class="media-blocks-container">
-                <div class="media-block" id="mediaBlock0">
-                    <select class="media-type-select" onchange="toggleMediaType(0)">
-                        <option value="image">📷 Image</option>
-                        <option value="video">🎬 Video</option>
-                    </select>
-                    <input type="file" name="media_file_0" class="media-file-input" accept="image/*,video/*" onchange="previewMedia(this, 0)">
-                    <div class="media-preview" id="mediaPreview0">
-                        <i class="fas fa-image"></i>
-                    </div>
-                    <button type="button" class="remove-media-btn" onclick="removeMediaBlock(0)" style="display: none;">×</button>
-                    <input type="hidden" name="media_type[]" value="image" id="mediaType0">
-                </div>
-            </div>
-            <button type="button" class="add-media-btn" onclick="addMediaBlock()"><i class="fas fa-plus"></i> Add Another Image/Video</button>
-            <small style="color: #666; display: block; margin-top: 8px;">Supported: JPG, PNG, GIF, WEBP (max 5MB) | MP4, WebM, OGG (max 50MB). First 5 images will be used for product gallery. First video will be used as product video.</small>
-            
-            <!-- Colors Section -->
-            <div class="section-title" style="margin-top: 20px;"><i class="fas fa-palette"></i> Available Colors</div>
-            <div id="colorsContainer">
-                <div class="color-input-group">
-                    <input type="text" name="colors[]" placeholder="Color name (e.g., Black, White, Blue)" style="flex: 2;">
-                    <button type="button" class="remove-spec-btn" onclick="this.parentElement.remove()"><i class="fas fa-trash"></i></button>
-                </div>
-            </div>
-            <button type="button" class="add-color-btn" onclick="addColorField()"><i class="fas fa-plus"></i> Add Another Color</button>
-            <small style="color: #666; display: block; margin-top: 8px;">Add color names only. Color circles will appear automatically.</small>
-            
-            <!-- Specifications Section -->
-            <div class="section-title" style="margin-top: 20px;"><i class="fas fa-microchip"></i> Technical Specifications</div>
-            <div id="specsContainer">
-                <div class="spec-row">
-                    <input type="text" name="spec_label[]" placeholder="Specification name">
-                    <input type="text" name="spec_value[]" placeholder="Specification value">
-                    <button type="button" class="remove-spec-btn" onclick="this.parentElement.remove()"><i class="fas fa-trash"></i></button>
-                </div>
-                <div class="spec-row">
-                    <input type="text" name="spec_label[]" placeholder="Specification name">
-                    <input type="text" name="spec_value[]" placeholder="Specification value">
-                    <button type="button" class="remove-spec-btn" onclick="this.parentElement.remove()"><i class="fas fa-trash"></i></button>
-                </div>
-            </div>
-            <button type="button" class="add-spec-btn" onclick="addSpecField()"><i class="fas fa-plus"></i> Add More Specifications</button>
-            
-            <button type="submit" name="add_product" class="submit-btn"><i class="fas fa-cloud-upload-alt"></i> Add Product</button>
-        </form>
+    <!-- ADD PRODUCT BUTTON -->
+    <div class="catalogue-controls">
+        <button class="add-product-btn" onclick="openAddProductModal()">
+            <i class="fas fa-plus"></i> Add Product
+        </button>
     </div>
 
     <!-- MY PRODUCTS LIST -->
@@ -641,7 +498,137 @@ if (isset($_SESSION['user_id'])) {
 
 <footer><p>© 2026 Reloop Electronic Hub — All Rights Reserved</p></footer>
 
+<!-- ADD PRODUCT MODAL -->
+<div id="addProductModal" class="ap-overlay<?php echo isset($open_add_modal) ? ' active' : ''; ?>">
+    <div class="ap-box">
+        <div class="ap-head">
+            <h2><i class="fas fa-plus-circle"></i> Add New Product</h2>
+            <button class="ap-close" onclick="closeAddProductModal()">×</button>
+        </div>
+        <form method="POST" action="" enctype="multipart/form-data" id="productForm">
+            <div class="form-row">
+                <div class="form-group"><label>Product Name *</label><input type="text" name="name" required placeholder="e.g., iPhone 15 Pro Max"></div>
+                <div class="form-group"><label>Brand *</label><input type="text" name="brand" required placeholder="e.g., Apple"></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label>Category *</label>
+                    <select name="category" required>
+                        <option value="">Select Category</option>
+                        <option value="Smartphones">📱 Smartphones</option>
+                        <option value="Laptops">💻 Laptops</option>
+                        <option value="Smart Watches">⌚ Smart Watches</option>
+                        <option value="Accessories">🎧 Accessories</option>
+                        <option value="Audio Devices">🔊 Audio Devices</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Stock Status *</label>
+                    <select name="stock_status" required>
+                        <option value="Available">Available</option>
+                        <option value="Limited">Limited Stock</option>
+                        <option value="Out of Stock">Out of Stock</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label>Current Price (PKR) *</label><input type="number" name="price" required placeholder="e.g., 350000"></div>
+                <div class="form-group"><label>Original Price (PKR)</label><input type="number" name="original_price" placeholder="e.g., 389999"></div>
+                <div class="form-group"><label>Discount (%)</label><input type="number" name="discount" placeholder="e.g., 10"></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label>Warranty</label>
+                    <select name="warranty">
+                        <option value="1 Year">1 Year</option>
+                        <option value="2 Years">2 Years</option>
+                        <option value="3 Years">3 Years</option>
+                        <option value="6 Months">6 Months</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Product Description *</label>
+                    <textarea name="description" required placeholder="Describe your product in detail..."></textarea>
+                </div>
+            </div>
+
+            <!-- Media Section -->
+            <div class="section-title" style="margin-top: 15px;"><i class="fas fa-images"></i> Product Media (Images & Videos)</div>
+            <div id="mediaContainer" class="media-blocks-container">
+                <div class="media-block" id="mediaBlock0">
+                    <select class="media-type-select" onchange="toggleMediaType(0)">
+                        <option value="image">📷 Image</option>
+                        <option value="video">🎬 Video</option>
+                    </select>
+                    <input type="file" name="media_file_0" class="media-file-input" accept="image/*,video/*" onchange="previewMedia(this, 0)">
+                    <div class="media-preview" id="mediaPreview0">
+                        <i class="fas fa-image"></i>
+                    </div>
+                    <button type="button" class="remove-media-btn" onclick="removeMediaBlock(0)" style="display: none;">×</button>
+                    <input type="hidden" name="media_type[]" value="image" id="mediaType0">
+                </div>
+            </div>
+            <button type="button" class="add-media-btn" onclick="addMediaBlock()"><i class="fas fa-plus"></i> Add Another Image/Video</button>
+            <small style="color: #666; display: block; margin-top: 8px;">Supported: JPG, PNG, GIF, WEBP (max 5MB) | MP4, WebM, OGG (max 50MB). First 5 images used for gallery; first video as product video.</small>
+
+            <!-- Colors Section -->
+            <div class="section-title" style="margin-top: 20px;"><i class="fas fa-palette"></i> Available Colors</div>
+            <div id="colorsContainer">
+                <div class="color-input-group">
+                    <input type="text" name="colors[]" placeholder="Color name (e.g., Black, White, Blue)" style="flex: 2;">
+                    <button type="button" class="remove-spec-btn" onclick="this.parentElement.remove()"><i class="fas fa-trash"></i></button>
+                </div>
+            </div>
+            <button type="button" class="add-color-btn" onclick="addColorField()"><i class="fas fa-plus"></i> Add Another Color</button>
+            <small style="color: #666; display: block; margin-top: 8px;">Add color names only. Color circles will appear automatically.</small>
+
+            <!-- Specifications Section -->
+            <div class="section-title" style="margin-top: 20px;"><i class="fas fa-microchip"></i> Technical Specifications</div>
+            <div id="specsContainer">
+                <div class="spec-row">
+                    <input type="text" name="spec_label[]" placeholder="Specification name">
+                    <input type="text" name="spec_value[]" placeholder="Specification value">
+                    <button type="button" class="remove-spec-btn" onclick="this.parentElement.remove()"><i class="fas fa-trash"></i></button>
+                </div>
+                <div class="spec-row">
+                    <input type="text" name="spec_label[]" placeholder="Specification name">
+                    <input type="text" name="spec_value[]" placeholder="Specification value">
+                    <button type="button" class="remove-spec-btn" onclick="this.parentElement.remove()"><i class="fas fa-trash"></i></button>
+                </div>
+            </div>
+            <button type="button" class="add-spec-btn" onclick="addSpecField()"><i class="fas fa-plus"></i> Add More Specifications</button>
+
+            <button type="submit" name="add_product" class="submit-btn"><i class="fas fa-cloud-upload-alt"></i> Add Product</button>
+        </form>
+    </div>
+</div>
+
 <script>
+function openAddProductModal() {
+    document.getElementById('addProductModal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeAddProductModal() {
+    document.getElementById('addProductModal').classList.remove('active');
+    document.body.style.overflow = '';
+}
+
+function toggleMediaType(index) {
+    const block = document.getElementById('mediaBlock' + index);
+    const select = block.querySelector('.media-type-select');
+    const fileInput = block.querySelector('.media-file-input');
+    const hiddenType = document.getElementById('mediaType' + index);
+    if (select.value === 'video') {
+        fileInput.accept = 'video/*';
+        hiddenType.value = 'video';
+    } else {
+        fileInput.accept = 'image/*,video/*';
+        hiddenType.value = 'image';
+    }
+}
+
+// Close modal when clicking the overlay background
+document.getElementById('addProductModal').addEventListener('click', function(e) {
+    if (e.target === this) closeAddProductModal();
+});
+
 let mediaCount = 1;
 
 

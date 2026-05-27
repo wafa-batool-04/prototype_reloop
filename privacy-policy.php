@@ -80,35 +80,7 @@ require_once 'config/db.php';
 </head>
 <body>
 
-<div class="main-header">
-    <div class="header-container">
-        <div class="logo-area">
-            <div class="glass-cube-logo">
-                <div class="cube-container"><div class="rotating-cube">
-                    <div class="cube-face front"><span>⟳</span></div>
-                    <div class="cube-face back"><span>⟳</span></div>
-                    <div class="cube-face right"><span>⟳</span></div>
-                    <div class="cube-face left"><span>⟳</span></div>
-                    <div class="cube-face top"><span>⟳</span></div>
-                    <div class="cube-face bottom"><span>⟳</span></div>
-                </div></div>
-                <div class="orb orb1"></div><div class="orb orb2"></div><div class="orb orb3"></div><div class="orb orb4"></div>
-            </div>
-            <div class="brand-text"><h1>RELOOP</h1><p>ELECTRONIC HUB</p></div>
-        </div>
-        <div class="nav-menu">
-            <a href="homepage.php"><i class="fas fa-home"></i> Home</a>
-            <a href="homepage.php#categories"><i class="fas fa-tag"></i> Products</a>
-            <?php if(isset($_SESSION['user_id'])): ?>
-                <a href="buyer_dashboard.php"><i class="fas fa-user-circle"></i> Dashboard</a>
-                <a href="logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
-            <?php else: ?>
-                <a href="login.php"><i class="fas fa-sign-in-alt"></i> Login</a>
-                <a href="register.php"><i class="fas fa-user-plus"></i> Register</a>
-            <?php endif; ?>
-        </div>
-    </div>
-</div>
+<?php include 'navbar.php'; ?>
 
 <div class="container">
     <div class="policy-header"><h1>Privacy Policy</h1><p>Last Updated: January 1, 2026</p></div>

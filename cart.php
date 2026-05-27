@@ -337,52 +337,7 @@ if (isset($_SESSION['user_id'])) {
 </head>
 <body>
 
-<div class="main-header">
-    <div class="header-container">
-        <div class="logo-area">
-            <div class="glass-cube-logo">
-                <div class="cube-container">
-                    <div class="rotating-cube">
-                        <div class="cube-face front"><span>⟳</span></div>
-                        <div class="cube-face back"><span>⟳</span></div>
-                        <div class="cube-face right"><span>⟳</span></div>
-                        <div class="cube-face left"><span>⟳</span></div>
-                        <div class="cube-face top"><span>⟳</span></div>
-                        <div class="cube-face bottom"><span>⟳</span></div>
-                    </div>
-                </div>
-                <div class="orb orb1"></div>
-                <div class="orb orb2"></div>
-                <div class="orb orb3"></div>
-                <div class="orb orb4"></div>
-            </div>
-            <div class="brand-text">
-                <h1>RELOOP</h1>
-                <p>ELECTRONIC HUB</p>
-            </div>
-        </div>
-        <div class="nav-menu">
-            <a href="homepage.php"><i class="fas fa-home"></i> Home</a>
-            <a href="homepage.php#products"><i class="fas fa-tag"></i> Products</a>
-            <?php if(isset($_SESSION['user_id'])): ?>
-                <?php if($_SESSION['user_type'] == 'admin'): ?>
-                    <a href="admin_dashboard.php"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
-                <?php elseif($_SESSION['user_type'] == 'seller'): ?>
-                    <a href="seller_dashboard.php"><i class="fas fa-store"></i> Dashboard</a>
-                <?php else: ?>
-                    <a href="buyer_dashboard.php"><i class="fas fa-user-circle"></i> Dashboard</a>
-                <?php endif; ?>
-                <a href="cart.php" class="cart-link"><i class="fas fa-shopping-cart"></i> Cart <?php if($cart_count > 0): ?><span class="cart-badge" id="cartBadge"><?php echo $cart_count; ?></span><?php endif; ?></a>
-                <a href="logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
-                <span class="user-badge"><i class="fas fa-user"></i> <?php echo htmlspecialchars($_SESSION['user_name']); ?></span>
-            <?php else: ?>
-                <a href="login.php"><i class="fas fa-sign-in-alt"></i> Login</a>
-                <a href="register.php"><i class="fas fa-user-plus"></i> Register</a>
-                <span class="user-badge"><i class="fas fa-user"></i> Guest</span>
-            <?php endif; ?>
-        </div>
-    </div>
-</div>
+<?php include 'navbar.php'; ?>
 
 <div class="cart-container">
     <h2><i class="fas fa-shopping-cart"></i> Your Shopping Cart</h2>

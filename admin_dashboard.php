@@ -52,7 +52,6 @@ $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Reloop Electronic Hub</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -443,36 +442,7 @@ $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- Navbar with Logo -->
-    <div class="navbar">
-        <div class="logo-area">
-            <div class="glass-cube-logo">
-                <div class="cube-container">
-                    <div class="rotating-cube">
-                        <div class="cube-face front"><span>⟳</span></div>
-                        <div class="cube-face back"><span>⟳</span></div>
-                        <div class="cube-face right"><span>⟳</span></div>
-                        <div class="cube-face left"><span>⟳</span></div>
-                        <div class="cube-face top"><span>⟳</span></div>
-                        <div class="cube-face bottom"><span>⟳</span></div>
-                    </div>
-                </div>
-                <div class="orb orb1"></div>
-                <div class="orb orb2"></div>
-                <div class="orb orb3"></div>
-                <div class="orb orb4"></div>
-            </div>
-            <div class="brand-text">
-                <h1>RELOOP</h1>
-                <p>ELECTRONIC HUB</p>
-            </div>
-        </div>
-        <div class="nav-links">
-            <a href="homepage.php"><i class="fas fa-home"></i> Home</a>
-            <a href="#" onclick="showLogoutModal(event)"><i class="fas fa-sign-out-alt"></i> Logout</a>
-            <span class="user-badge"><i class="fas fa-user-shield"></i> <?php echo $_SESSION['user_name']; ?> (Admin)</span>
-        </div>
-    </div>
+    <?php include 'navbar.php'; ?>
 
     <!-- Main Container -->
     <div class="container">
@@ -592,38 +562,5 @@ $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <p>© 2026 Reloop Electronic Hub — Admin Dashboard. All Rights Reserved.</p>
     </div>
     
-    <script>
-    function showLogoutModal(event) {
-        event.preventDefault();
-        document.getElementById('logoutModal').classList.add('active');
-    }
-
-    function closeLogoutModal() {
-        document.getElementById('logoutModal').classList.remove('active');
-    }
-
-    function confirmLogout() {
-        window.location.href = 'logout.php';
-    }
-
-    window.onclick = function(event) {
-        const modal = document.getElementById('logoutModal');
-        if (event.target === modal) {
-            closeLogoutModal();
-        }
-    }
-    </script>
-    
-    <!-- Logout Modal -->
-    <div id="logoutModal" class="logout-modal">
-        <div class="logout-modal-content">
-            <h3>🔓 Confirm Logout</h3>
-            <p>Are you sure you want to logout from your account?</p>
-            <div class="logout-modal-buttons">
-                <button class="btn-confirm" onclick="confirmLogout()">Yes, Logout</button>
-                <button class="btn-cancel" onclick="closeLogoutModal()">Cancel</button>
-            </div>
-        </div>
-    </div>
 </body>
 </html>
