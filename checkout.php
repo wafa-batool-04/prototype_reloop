@@ -594,23 +594,19 @@ function closeAppAlert() {
 const STRIPE_ENABLED = <?php echo $stripe_enabled ? 'true' : 'false'; ?>;
 const CHECKOUT_GRAND_TOTAL = <?php echo json_encode((float) $grand_total); ?>;
 const STRIPE_APPEARANCE = {
-    theme: 'night',
+    theme: 'stripe',
     variables: {
-        colorPrimary:         '#d8ee68',
-        colorBackground:      '#0a1f44',
-        colorText:            '#eae5dc',
-        colorTextSecondary:   '#b8af06',
-        colorDanger:          '#dc3545',
-        borderRadius:         '10px',
-        fontFamily:           'Poppins, Arial, sans-serif'
+        colorPrimary: '#375113',
+        colorBackground: '#ffffff',
+        colorText: '#0a1f44',
+        colorDanger: '#dc3545',
+        borderRadius: '10px',
+        fontFamily: 'Poppins, Arial, sans-serif'
     },
     rules: {
-        '.Input':        { border: '2px solid #375113', boxShadow: 'none' },
-        '.Input:focus':  { border: '2px solid #b8af06', boxShadow: '0 0 0 3px rgba(184,175,6,0.2)' },
-        '.Label':        { color: '#d8ee68', fontWeight: '600' },
-        '.Tab':          { border: '2px solid #1c1917', backgroundColor: '#1c1917' },
-        '.Tab--selected':{ border: '2px solid #b8af06', backgroundColor: '#0a1f44', color: '#d8ee68' },
-        '.Tab:hover':    { border: '2px solid #b8af06', color: '#d8ee68' }
+        '.Input': { border: '2px solid #e0e0e0', boxShadow: 'none' },
+        '.Input:focus': { border: '2px solid #b8af06', boxShadow: '0 0 0 3px rgba(184,175,6,0.2)' },
+        '.Label': { color: '#0a1f44', fontWeight: '600' }
     }
 };
 
